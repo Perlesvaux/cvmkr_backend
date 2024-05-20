@@ -15,7 +15,7 @@ const { spawn } = require('child_process');
 
 // Configure body-parser
 const bodyParser = require('body-parser')
-app.use(bodyParser.text({type:"text/plain"}))
+// app.use(bodyParser.text({type:"text/plain"}))
 app.use(bodyParser.urlencoded({extended:false}))
 
 // Simple Logger =D
@@ -50,6 +50,9 @@ app.post("/new",  MWLogger, (req, res) => {
 
 
 app.post("/generate",  MWLogger, (req, res) => {
+    console.log(req.body.jsonContent)
+  // for (let x of req.body.jsonContent) console.log(x)
+    // console.log(JSON.stringify(req.body.jsonContent))
     // res.setHeader('Content-Type', ' application/json');
     // res.setHeader('Content-Disposition', `attachment`);
     //

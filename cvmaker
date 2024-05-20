@@ -2,6 +2,7 @@
 import os
 import json
 import argparse
+import sys
 
 
 cli_description = """
@@ -395,6 +396,8 @@ def main():
     # Positional argument for the file name
     parser.add_argument('json', nargs='?', help='Feed this script a JSON representing your cv. If you don\'t have one yet, use "cvmaker -n" to create one')
 
+    parser.add_argument('-s', '--standard-input', nargs='?', const='-', type=str, help='Input file or stdin')
+
     # Optional argument to specify image size
     parser.add_argument('-', '--to-so', action='store_true', help='to standard output')
 
@@ -582,6 +585,58 @@ def main():
 
                 )
             print(result)
+
+
+    if args.standard_input:
+        from_stdin = sys.stdin.read()
+        # jsn = json.loads(from_stdin)
+        # print(jsn)
+
+        # Experiment went well!
+        # dct = '{"first_name": "Michael", "last_name": "Rodgers", "department": "Marketing"}'
+        # jsn = json.loads(dct)
+        # print(jsn)
+
+        with open(flavor) as css:
+            cv = json.loads(from_stdin)
+
+            all_skills = field_skill.format(skills = " ".join ([skills_template.format(skill=ability) for ability in cv["skills"]]),background_color=background_color, text_color=text_color, skill_header=skill_header) if len(cv.get("skills")) else "";
+            all_certs = field_cert.format(certifications = " ".join([certs_template.format(background_color=background_color, link=cert['link'], image=cert['image'], description=cert['description'], img_size=img_size) for cert in cv["certifications"]]), background_color=background_color, text_color=text_color, certs_header=certs_header) if len(cv.get("certifications")) else "";
+            all_experience = field_experience.format(experience = " ".join([experience_template.format(when=exp['when'], where=exp['where'], what=exp['what'], description=exp['description']) for exp in cv['experience']]), background_color=background_color, text_color=text_color, experience_header=experience_header) if len(cv.get("experience")) else "";
+            all_links = " ".join([links_template.format(link=social['link'], color=social['color'], legend=social['legend']) for social in cv["links"]]) if len(cv.get("links")) else "";
+            all_references = field_references.format(references = " ".join([references_template.format(who=refer['who'], tel=refer['tel']) for refer in cv['references']]), background_color=background_color, text_color=text_color, references_header=references_header) if len(cv.get("references")) else "";
+            all_education = field_education.format(education = " ".join ([education_template.format(education=ed) for ed in cv["education"]]),background_color=background_color, text_color=text_color, education_header=education_header) if len(cv.get("education")) else "";
+            all_profile = field_profile.format(profile=cv["profile"], background_color=background_color, text_color=text_color, profile_header=profile_header) if cv.get("profile") else "";
+
+
+            result = body.format(
+                icons=icons,   
+                style=css.read(),    
+                pagebreak="@media print {.break {page-break-after: always;}}",
+                text_color=text_color,
+                background_color=background_color,
+                name=cv["name"],
+                residence=cv["residence"],
+                phone=cv["phone"],
+                email=cv["email"],
+                field_profile=all_profile,
+                links= all_links,
+                field_skill=all_skills,
+                field_cert=all_certs,
+                field_experience = all_experience,
+                field_references = all_references,
+                field_education = all_education
+
+                )
+            print(result)
+        
+
+
+    # if args.file == '-' or args.file is None:
+    #     input_content = sys.stdin.read()
+    # else:
+    #     with open(args.file, 'r') as file:
+    #         input_content = file.read()
 
 
 if __name__ == "__main__":
