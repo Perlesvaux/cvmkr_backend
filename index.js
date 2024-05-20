@@ -30,19 +30,11 @@ function MWLogger (req, res, next){
 // Form has a 'path2video' field. This is where video URL goes.
 // when user submits the POST-request, the server responds with a file.
 app.post("/new",  MWLogger, (req, res) => {
-
-    // Early exit if invalid format
-    // if (!['original', 'mp3'].includes(req.body.outputFormat)) return res.end();
-
     res.setHeader('Content-Type', ' application/json');
-    // res.setHeader('Content-Disposition', `attachment; filename="romulo"`);
     res.setHeader('Content-Disposition', `attachment`);
 
     const cmd = 'python3 cvmaker';
-    // let args = ['-q', '-o', '-', `${req.body.path2video}`];
-    // if (req.body.outputFormat!='original') args = [...args, '|', 'ffmpeg', '-i', 'pipe:0', '-f', `${req.body.outputFormat}`, 'pipe:1'];
     let args = ['-w', '-'];
-    
     const process = spawn(cmd, args, {shell:true});
 
     process.stdout.on('data', (data)=>{
@@ -56,6 +48,26 @@ app.post("/new",  MWLogger, (req, res) => {
 
 });
 
+
+app.post("/generate",  MWLogger, (req, res) => {
+    // res.setHeader('Content-Type', ' application/json');
+    // res.setHeader('Content-Disposition', `attachment`);
+    //
+    // const cmd = 'python3 cvmaker';
+    // let args = ['-w', '-'];
+    // const process = spawn(cmd, args, {shell:true});
+    //
+    // process.stdout.on('data', (data)=>{
+    //   res.write(data);
+    // })
+    //
+    // process.on('close', (code)=>{
+    //   if (code!== 0) console.error(`LONG PIPE process exited with code: ${code}`);
+    //   res.end()
+    // })
+
+  res.send("<div>hello world!</div>")
+});
 
 
 //App is ready to go!
