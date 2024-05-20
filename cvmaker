@@ -51,8 +51,8 @@ large_seed = {
   "email":"example@mail.com",
   "profile":"59-word description of who you are. i.e.: Front-End Developer. I specialize in React.js and love to fine-tune my own CSS whenever possible. UX before looks. I carefully study the documentation before starting to code. Effective communication is the way to get things done; clear code is the map, concise comments the compass",
   "links": [
-      {"link":"https/...github", "color":"dark", "legend":"<i class='bi bi-github h1'></i>"},
-      {"link":"https/...linkedin", "color":"info", "legend":"<i class='bi bi-linkedin h1'></i>"}
+      {"link":"https/...github", "color":"dark", "legend":"<i class=\"bi bi-github h1\"></i>"},
+      {"link":"https/...linkedin", "color":"info", "legend":"<i class=\"bi bi-linkedin h1\"></i>"}
       ],
   "experience": [
     {"when":"Dec 2011 - Jan 2012",
@@ -105,6 +105,83 @@ seed = {
   "references":[],
   "education":[]
 }
+
+
+simple_body = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Bootstrap 5.3.2 -->
+    <!-- script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script> -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" integrity="sha384-4LISF5TTJX/fLmGSxO53rV4miRxdg84mZsxmO8Rx5jGtp/LbrixFETvWa5a6sESd" crossorigin="anonymous">
+
+    <style>
+
+    {pagebreak}
+
+    {style}
+
+    </style>
+
+    <title>{name}</title>
+</head>
+<body>
+
+
+<div class="card {background_color} mb-3">
+  <!-- <div class="card-header {text_color} text-center">Name Goes Here</div> -->
+      <div class="card-header {text_color} text-center h1"><i class="bi bi-person-fill"></i> <span class="px-2">{name}</span></div>
+
+  <div class="card-body">
+    <ul class="list-group mb-3">
+      <li class="list-group-item list-group-item-info d-flex">
+                <i class="bi bi-geo-alt-fill"></i> <span class="px-2">{residence}</span>
+      </li>
+      <li class="list-group-item list-group-item-info d-flex">
+                <i class="bi bi-telephone-fill"></i> <span class="px-2">{phone}</span>
+      </li>
+      <li class="list-group-item list-group-item-info d-flex">
+                <i class="bi bi-envelope-fill"></i> <span class="px-2">{email}</span>
+      </li>
+    </ul>   
+
+
+   <div class="d-flex justify-content-around">
+
+   {links}
+
+  </div>
+
+
+
+  </div>
+</div>
+
+
+{field_skill}
+
+
+{field_profile}
+
+<div class="break"></div>
+
+{field_cert}
+
+
+{field_experience}
+
+{field_education}
+
+{field_references}
+
+</body>
+</html>
+
+"""
+
 
 
 body = """
@@ -609,8 +686,7 @@ def main():
             all_profile = field_profile.format(profile=cv["profile"], background_color=background_color, text_color=text_color, profile_header=profile_header) if cv.get("profile") else "";
 
 
-            result = body.format(
-                icons=icons,   
+            result = simple_body.format(
                 style=css.read(),    
                 pagebreak="@media print {.break {page-break-after: always;}}",
                 text_color=text_color,

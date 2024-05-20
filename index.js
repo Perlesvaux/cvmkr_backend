@@ -42,7 +42,7 @@ app.post("/new",  MWLogger, (req, res) => {
     })
 
     process.on('close', (code)=>{
-      if (code!== 0) console.error(`LONG PIPE process exited with code: ${code}`);
+      if (code!== 0) console.error(`Unable to generate JSON. Exited with code: ${code}`);
       res.end()
     })
 
@@ -50,7 +50,24 @@ app.post("/new",  MWLogger, (req, res) => {
 
 
 app.post("/generate",  MWLogger, (req, res) => {
-    console.log(req.body.jsonContent)
+    // res.setHeader('Content-Type', ' application/json');
+    res.setHeader('Content-Disposition', `attachment`);
+    // console.log(req.body.jsonContent)
+
+    const cmd = `echo '${req.body.jsonContent}'`
+    let args = ['|', 'python3', 'cvmaker', '-s']
+    const process = spawn(cmd, args, {shell:true});
+
+    process.stdout.on('data', (data)=>{
+      res.write(data)
+    })
+
+    process.on('close', (code)=>{
+    if (code!==0) console.error(`Long pipe error. Exited with code: ${code}`)
+    res.end()
+  })
+
+    
   // for (let x of req.body.jsonContent) console.log(x)
     // console.log(JSON.stringify(req.body.jsonContent))
     // res.setHeader('Content-Type', ' application/json');
@@ -69,7 +86,7 @@ app.post("/generate",  MWLogger, (req, res) => {
     //   res.end()
     // })
 
-  res.send("<div>hello world!</div>")
+  // res.send("<div>hello world!</div>")
 });
 
 
