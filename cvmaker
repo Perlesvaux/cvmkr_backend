@@ -1,0 +1,590 @@
+#!/usr/bin/env python3
+import os
+import json
+import argparse
+
+
+cli_description = """
+Turn a JSON file into a cv! 
+
+Redirect the ouput to a file!
+    $ cvmaker your_cv.json > index.html
+
+Customize its looks! i.e.:
+Image-size=2, Text-color=success, background-color=bg-success, flavor=quartz 
+    $ cvmaker your_cv.json -i 2 -t warning -b border-dark -f quartz > index.html
+
+1) Initialize a JSON representation of your cv.
+    Whole JSON (recommended)
+    $ cvmaker -w 
+
+    Minimal JSON
+    $ cvmaker -n  
+
+2) Add a new skill, experience, link or certificate:
+    $ cvmaker -a experience
+
+3) Update an existing entry with flags {Create, Entry, Property, Value}:
+    $ cvmaker -c links -e 0 -p description -v "New value for description property on first entry under links section "
+
+    $ cvmaker -c skills -e 1 -v "Updated skill!"
+
+    $ cvmaker -c name -v "John Doe"
+
+
+Open the resulting HTML file. Now do CTRL+P to generate a PDF out of it! (i.e.: Destination -> Save to PDF) 
+Use these settings for the best results:
+   - Orientation -> Portrait
+   - Margins -> None
+   - Scale -> Default (or 'Fit to page width')
+    
+... Enjoy! =D
+
+"""
+
+
+large_seed = {
+  "name":"Your_full_name_goes_here",
+  "residence":"City, country",
+  "phone":"+000 0000000",
+  "email":"example@mail.com",
+  "profile":"59-word description of who you are. i.e.: Front-End Developer. I specialize in React.js and love to fine-tune my own CSS whenever possible. UX before looks. I carefully study the documentation before starting to code. Effective communication is the way to get things done; clear code is the map, concise comments the compass",
+  "links": [
+      {"link":"https/...github", "color":"dark", "legend":"<i class='bi bi-github h1'></i>"},
+      {"link":"https/...linkedin", "color":"info", "legend":"<i class='bi bi-linkedin h1'></i>"}
+      ],
+  "experience": [
+    {"when":"Dec 2011 - Jan 2012",
+     "where": "Place",
+     "what":"Role",
+     "description":"Role_description_goes_here"},
+
+    {"when":"Apr 2016 - Apr 2019",
+     "where": "Place",
+     "what":"Role",
+     "description":"Role_description_goes_here"}
+
+  ],
+  "certifications":[
+    {"description":"Briefly_describe_what_cert_is_about", "image":"./path/to/image.png", "link":"https://www.freecodecamp.org/certification/..."},
+    {"description":"Briefly_describe_what_cert_is_about", "image":"./path/to/image.png", "link": "https://drive.google.com/..."}
+  ],
+  "skills":[
+      "<i class='bi bi-translate pe-2'></i>English_proficiency_and_any_other_language_you_speak_goes_here",
+      "<i class='bi bi-code-slash pe-2'></i>You_can_add_bootstrap_icons_and_add_some_padding_with_class_pe-2",
+      "https://icons.getbootstrap.com/",
+      "Customize_skill_set_as_you_see_fit",
+      "Add_soft_skills_if_you_want_as_well",
+      "Be_prudent_as_too_many_rows_can_make_the_final_document_somewhat_ugly"
+  ],
+  "references":[
+    {
+      "who": "John Doe Smith",
+      "tel": "1-800-phone-goes-here"
+    }
+  ],
+  "education":[
+      "Highschool_goes_here",
+      "english_goes_here",
+      "Higher_ed_goes_here"
+  ]
+}
+
+
+seed = {
+  "name":"Your_full_name_goes_here",
+  "residence":"City, country",
+  "phone":"+000 0000000",
+  "email":"example@mail.com",
+  "profile":"59-word description of who you are. i.e.: Front-End Developer. I specialize in React.js and love to fine-tune my own CSS whenever possible. UX before looks. I carefully study the documentation before starting to code. Effective communication is the way to get things done; clear code is the map, concise comments the compass",
+  "links":[],
+  "experience":[],
+  "certifications":[],
+  "skills":[],
+  "references":[],
+  "education":[]
+}
+
+
+body = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Bootstrap 5.3.2 -->
+    <!-- script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script> -->
+    <!-- link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" integrity="sha384-4LISF5TTJX/fLmGSxO53rV4miRxdg84mZsxmO8Rx5jGtp/LbrixFETvWa5a6sESd" crossorigin="anonymous"> -->
+
+    <link rel="stylesheet" href="{icons}">
+
+    <style>
+
+    {pagebreak}
+
+    {style}
+
+    </style>
+
+    <title>{name}</title>
+</head>
+<body>
+
+
+<div class="card {background_color} mb-3">
+  <!-- <div class="card-header {text_color} text-center">Name Goes Here</div> -->
+      <div class="card-header {text_color} text-center h1"><i class="bi bi-person-fill"></i> <span class="px-2">{name}</span></div>
+
+  <div class="card-body">
+    <ul class="list-group mb-3">
+      <li class="list-group-item list-group-item-info d-flex">
+                <i class="bi bi-geo-alt-fill"></i> <span class="px-2">{residence}</span>
+      </li>
+      <li class="list-group-item list-group-item-info d-flex">
+                <i class="bi bi-telephone-fill"></i> <span class="px-2">{phone}</span>
+      </li>
+      <li class="list-group-item list-group-item-info d-flex">
+                <i class="bi bi-envelope-fill"></i> <span class="px-2">{email}</span>
+      </li>
+    </ul>   
+
+
+   <div class="d-flex justify-content-around">
+
+   {links}
+
+  </div>
+
+
+
+  </div>
+</div>
+
+
+{field_skill}
+
+
+{field_profile}
+
+<div class="break"></div>
+
+{field_cert}
+
+
+{field_experience}
+
+{field_education}
+
+{field_references}
+
+</body>
+</html>
+
+"""
+
+field_profile="""<div class="card {background_color} mb-3">
+    <div class="card-header text-center h2 {text_color}">{profile_header}</div>
+     <div class="card-body">
+        <div class="alert alert-dismissible alert-info">
+            {profile}
+        </div>
+      </div>
+</div>
+"""
+
+field_skill="""<div class="card {background_color} mb-3">
+    <div class="card-header text-center h2 {text_color}">{skill_header}</div>
+     <div class="card-body">
+    <ul class="list-group">
+      {skills}
+    </ul>   
+      </div>
+</div>"""
+
+field_cert="""<div class="card {background_color} mb-3">
+    <div class="card-header text-center h2 {text_color}">{certs_header}</div>
+     <div class="card-body">
+        <div class="container d-flex flex-wrap">
+          {certifications}
+          
+        </div>
+      </div>
+</div>
+
+<div class="break"></div>
+"""
+
+field_experience="""<div class="card {background_color} mb-3">
+    <div class="card-header text-center h2 {text_color}">{experience_header}</div>
+     <div class="card-body">
+
+    <ul class="list-group"Profile>
+      {experience}
+          </ul>
+
+      </div>
+</div>
+
+<div class="break"></div>
+"""
+
+field_references="""<div class="card {background_color} mb-3">
+    <div class="card-header text-center h2 {text_color}">{references_header}</div>
+     <div class="card-body">
+
+    <ul class="list-group">
+      {references}
+          </ul>
+
+      </div>
+</div>
+"""
+
+field_education="""<div class="card {background_color} mb-3">
+    <div class="card-header text-center h2 {text_color}">{education_header}</div>
+     <div class="card-body">
+    <ul class="list-group">
+      {education}
+    </ul>   
+      </div>
+</div>"""
+
+
+
+education_template = """<li class='list-group-item list-group-item-danger d-flex'>{education}</li>"""
+skills_template = """<li class='list-group-item list-group-item-success d-flex'>{skill}</li>"""
+certs_template = """
+
+          <div class='card {background_color}' style='height:{img_size}%;width:{img_size}%;'>
+            <div class="card-body" >
+              <div><a href='{link}'><img style="height:100%;width:100%; class="border border-dark" src='{image}' alt="{description}"></a></div>
+            </div>
+            <div class="card-footer  h6">
+               {description}
+            </div>
+          </div>
+"""
+experience_template = """
+<li class='list-group-item list-group-item-primary d-flex'>
+ <div class='container'>
+  <div class='row'>
+   <div class='col-4'><strong>{when}</strong></div>
+   <div class='col-4'><strong>{where}</strong></div>
+   <div class='col-4'><i><strong>{what}</strong></i></div></div>
+   <div>{description}</div></div>
+</li>
+   """
+
+
+references_template = """
+<li class='list-group-item list-group-item-secondary d-flex text-center'>
+ <div class='container'>
+  <div class='row'>
+   <div class='col-6'><strong>{who}</strong></div>
+   <div class='col-6'>{tel}</div>
+  </div>
+ </div>
+</li>
+   """
+
+
+links_template = "<a href='{link}' class='btn btn-{color} flex-fill m-2'>{legend}</a>" 
+
+
+root = os.path.dirname(os.path.realpath(__file__))
+
+target_json = os.path.join(root, os.getcwd(), 'your_cv.json')
+
+document = {}
+
+if os.path.exists(target_json):
+    with open(target_json, 'r') as _in: 
+        document = json.load(_in)
+
+# Control Panel
+actions={
+        'skill': lambda: adding('skills', "Enter your new skill!\n>"),
+        'experience': lambda: addition('experience', {"when":"When? i.e.: Jun 1996 - Dec 1999\n>", "where":"Where? i.e.: Microsoft\n>", "what":"what? i.e.: Front End Developer\n>", "description":"Please describe this role\n> "}),
+        'cert': lambda: addition('certifications', {"description": "Describe what the certification is about\n> ", "image": "Add path to image. Paste with CTRL+Shift+V\n> ", "link": "Add link to certification. Paste with CTRL+Shift+V\n> "}),
+        'link': lambda: addition('links', {"link":"Add link to certification. Paste with CTRL+Shift+V\n> ", "color": "Select color: light dark primary secondary success danger warning info\n> ", "legend": "Look for a cool icon here: https://icons.getbootstrap.com/ (Paste with CTRL+Shift+V)\n> "}),
+        'reference': lambda: addition('references', {"who":"Who?\n>", "tel":"Telephone?\n>"}),
+        'education': lambda: adding('education', "Enter your new education\n>")
+        }
+
+# CLI choices
+properties={
+        # 'skills':['skill'],
+        'experience':['when', 'where', 'what', 'description'],
+        'certifications':['link', 'image', 'description'],
+        'links':['link', 'color', 'legend']
+        }
+
+entries={
+        'skills':range(len(document.get('skills')) if document.get('skills') else 0),
+        'experience':range(len(document.get('experience')) if document.get('experience') else 0),
+        'certifications':range(len(document.get('certifications')) if document.get('certifications') else 0),
+        'links':range(len(document.get('links')) if document.get('links') else 0)
+        }
+
+textcolors=["light","dark","primary","secondary","success","danger","warning","info","body","muted","white","black-50","white-50"]
+
+backgrounds=[
+        'bg-primary', 'bg-secondary','bg-success','bg-danger','bg-warning','bg-info','bg-light','bg-dark',
+        'border-primary', 'border-secondary','border-success','border-danger','border-warning','border-info','border-light','border-dark'
+        ]
+
+flavors=["zephyr","yeti","vapor","united","superhero","spacelab","solar","slate","sketchy","simplex","sandstone","quartz","pulse",
+"morph","minty","materia","lux","lumen","litera","journal","flatly","darkly","cyborg","cerulean","cosmo"]
+
+
+# JSON property added here is a list of objects with keys
+def addition(field, keys_and_prompts):
+    with open(target_json, 'r') as _in: 
+        cv = json.load(_in)
+        cv[field].append({key:input(prompt) for key,prompt in keys_and_prompts.items()})
+
+    with open(target_json, 'w') as _out:
+        _out.write(json.dumps(cv, indent=2))
+
+
+# JSON property added here is a list of primitives
+def adding(field, prompt):
+    with open(target_json, 'r') as _in: 
+        cv = json.load(_in)
+        cv[field].append(input(prompt))
+
+    with open(target_json, 'w') as _out:
+        _out.write(json.dumps(cv, indent=2))
+
+
+#JSON property changed here is a list of objects with n number of keys
+def change(field, index, attribute, new_value):
+    with open(target_json, 'r') as _in: 
+        cv = json.load(_in)
+        cv[field][index][attribute]=new_value
+
+    with open(target_json, 'w') as _out:
+        _out.write(json.dumps(cv, indent=2))
+
+
+#JSON property changed here is a list of primitives.
+def alter(field, index, new_value):
+    with open(target_json, 'r') as _in: 
+        cv = json.load(_in)
+        cv[field][index]=new_value
+
+    with open(target_json, 'w') as _out:
+        _out.write(json.dumps(cv, indent=2))
+
+
+#JSON property changed here is a primitive.
+def update(field, new_value):
+    with open(target_json, 'r') as _in: 
+        cv = json.load(_in)
+        cv[field]=new_value
+
+    with open(target_json, 'w') as _out:
+        _out.write(json.dumps(cv, indent=2))
+
+
+
+def main():
+    parser = argparse.ArgumentParser(description='Turn a JSON file into a cv! (1) Pipe the output to an HTML file. (2) Open it and do CTRL+P to generate a PDF out of it! ')
+
+    # Positional argument for the file name
+    parser.add_argument('json', nargs='?', help='Feed this script a JSON representing your cv. If you don\'t have one yet, use "cvmaker -n" to create one')
+
+    # Optional argument to specify image size
+    parser.add_argument('-', '--to-so', action='store_true', help='to standard output')
+
+    # Optional argument to specify image size
+    parser.add_argument('-i', '--image-size', type=int, help='Image size', choices=[0,1,2])
+
+    # Optional argument to specify flavor
+    parser.add_argument('-f','--flavor', help='Flavor of the script', choices=flavors)
+
+    # Optional argument to specify language
+    parser.add_argument('-l','--language', help='Defaults to English', choices=["spa", "eng"])
+
+    # Optional argument to create a JSON - Minimal version
+    parser.add_argument('-n', '--new', action='store_true', help="Resulting json is your cv. Use -a flag to add new entries.")
+
+    # Optional argument to create a JSON - Whole version
+    parser.add_argument('-w', '--whole', action='store_true', help="Resulting json is your cv. Customise it as you see fit.")
+
+    # Optional argument to add properties to JSON
+    parser.add_argument('-a', '--add', choices=actions.keys(), nargs="?", help="Add new skills, experience & certificates interactively.")
+
+    # Optional argument to change card-header theme at runtime
+    parser.add_argument('-t', '--text-color', choices=textcolors, nargs="?", help="Select text-color of card-headers")
+
+    # Optional argument to change card-background theme at runtime
+    parser.add_argument('-b', '--background', choices=backgrounds, nargs="?", help="Select color of card-backgrounds ")
+    
+    # Optional argument to display additional info about how to use the CLI
+    parser.add_argument('-he', '--help-extra', action="store_true", help="Display additional info")
+
+    
+    #CEPV - sequence of optional arguments to update entries... Specify field to CHANGE
+    parser.add_argument('-c', '--change', choices=[x for x in document], help="Update entries. Follow-up with an -e")
+
+    # checks what flags have already been parsed. Used for computing choices below
+    args, _ = parser.parse_known_args()
+
+    # ... Specify ENTRY to change
+    parser.add_argument('-e', '--entry', nargs='?', choices=entries.get(args.change), type=int, help="Select index of entry you want to update.")
+
+    # ... Specify PROPERTY to change (if any)
+    parser.add_argument('-p', '--property', choices=properties.get(args.change), help="Select the attribute you want to change. Follow-up with a -v")
+
+    # ... Speficy new VALUE (if property=color, possible values are reduced to only valid options)
+    args, _ = parser.parse_known_args()
+    if args.property == 'color':
+        parser.add_argument('-v', '--value', choices=["light","dark","primary","secondary","success","danger","warning","info"], help="Add here the new value.")
+    else:
+        parser.add_argument('-v', '--value', help="Add here the new value.")
+
+
+
+
+    # Action starts HERE!
+    args = parser.parse_args()
+
+
+    if args.help_extra:
+        print(cli_description)
+
+
+
+    if args.change in {'links', 'experience', 'certifications'} and args.property and args.value and isinstance(args.entry, int):
+        change(args.change, args.entry, args.property, args.value)
+        print(f"Field \"{args.change}\", entry n={args.entry}, property \"{args.property}\" updated successfully!")
+        exit(0)
+
+
+    if args.change in {'skills'} and isinstance(args.entry, int) and args.value:
+        alter(args.change, args.entry, args.value)
+        print(f"Field \"{args.change}\", entry n={args.entry} updated successfully!")
+        exit(0)
+
+
+    if args.change in {"name", "email", "residence", "phone", "profile"} and args.value:
+        update(args.change, args.value)
+        print(f"Field \"{args.change}\" updated successfully!")
+        exit(0)
+
+
+    # Initialize a cv.json. 
+    if args.whole:
+        if args.to_so:
+            print(json.dumps(large_seed, indent=2))
+
+        else:
+            print(f"new cv will be created here: {os.path.join(root, os.getcwd())}!")
+
+            with open(target_json, 'x') as your_cv:
+                your_cv.write(json.dumps(large_seed, indent=2))
+                print("your_cv.json successfully created! (now do:\ncvmaker your_cv.json).")
+
+
+    if args.new:
+        print(f"new cv will be created here: {os.path.join(root, os.getcwd())}!")
+
+        with open(target_json, 'x') as your_cv:
+
+            # Getting user input...
+            print("Skip field leaving blank & pressing ENTER.")
+            name = input("Enter your full name\n> ")
+            country = input("Residence - Enter the country you currently are on\n> ")
+            city = input("Residence - Enter the city you currently live at\n> ")
+            ext = input("Phone - Enter your area/country code (i.e.: 001 = USA, 503 = ESA)\n> ")
+            phone = input("Phone - Enter your phone number\n> ")
+            email = input("Email - Enter your e-mail address\n> ")
+            profile = input("Profile - 59-word description of yourself. Strengths only!\n> ")
+
+            seed['name']      = seed['name'] if name=="" else name    
+            seed['residence'] = f"{'City' if city=='' else city}, {'Country' if country=='' else country}" 
+            seed['phone']     = f"{'+000' if ext=='' else f'+{ext}'} {'0000000' if phone=='' else phone}"     
+            seed['email']     = seed['email']   if email=="" else email   
+            seed['profile']   = seed['profile']   if profile=="" else profile   
+
+            your_cv.write(json.dumps(seed, indent=2))
+            print("your_cv.json successfully created! (now do:\ncvmaker your_cv.json).")
+
+
+
+    
+    if args.add:
+        actions.get(args.add)()
+        print(f"New entry added to \"{args.add}\" successfully!")
+
+
+
+#Sensible defaults
+    sizes = ['33', '50', '100']
+
+    img_size = sizes[args.image_size] if args.image_size else '33'
+
+    flavor = os.path.join(root, 'styles', f"{args.flavor}.css") if args.flavor else os.path.join(root, 'styles', 'spacelab.css')
+
+    icons = os.path.join(root, 'font', 'bootstrap-icons.css')
+
+    text_color = f"text-{args.text_color}" if args.text_color else "text-dark"
+
+    background_color = args.background if args.background else "border-light"
+
+    profile_header = "Perfil" if args.language == "spa" else "Profile"
+
+    skill_header = "Habilidades"  if args.language == "spa" else "Skills"
+
+    certs_header = "Licencias y Certificaciones" if args.language == "spa" else "Licenses & Certifications" 
+
+    experience_header = "Experiencia" if args.language == "spa" else "Experience" 
+
+    references_header = "Referencias" if args.language == "spa" else "References"
+
+    education_header = "Educación" if args.language == "spa" else "Education"
+
+
+
+    if args.json:
+
+        with open(args.json, 'r') as file, open(flavor) as css:
+            cv = json.load(file)
+
+            all_skills = field_skill.format(skills = " ".join ([skills_template.format(skill=ability) for ability in cv["skills"]]),background_color=background_color, text_color=text_color, skill_header=skill_header) if len(cv.get("skills")) else "";
+            all_certs = field_cert.format(certifications = " ".join([certs_template.format(background_color=background_color, link=cert['link'], image=cert['image'], description=cert['description'], img_size=img_size) for cert in cv["certifications"]]), background_color=background_color, text_color=text_color, certs_header=certs_header) if len(cv.get("certifications")) else "";
+            all_experience = field_experience.format(experience = " ".join([experience_template.format(when=exp['when'], where=exp['where'], what=exp['what'], description=exp['description']) for exp in cv['experience']]), background_color=background_color, text_color=text_color, experience_header=experience_header) if len(cv.get("experience")) else "";
+            all_links = " ".join([links_template.format(link=social['link'], color=social['color'], legend=social['legend']) for social in cv["links"]]) if len(cv.get("links")) else "";
+            all_references = field_references.format(references = " ".join([references_template.format(who=refer['who'], tel=refer['tel']) for refer in cv['references']]), background_color=background_color, text_color=text_color, references_header=references_header) if len(cv.get("references")) else "";
+            all_education = field_education.format(education = " ".join ([education_template.format(education=ed) for ed in cv["education"]]),background_color=background_color, text_color=text_color, education_header=education_header) if len(cv.get("education")) else "";
+            all_profile = field_profile.format(profile=cv["profile"], background_color=background_color, text_color=text_color, profile_header=profile_header) if cv.get("profile") else "";
+
+
+            result = body.format(
+                icons=icons,   
+                style=css.read(),    
+                pagebreak="@media print {.break {page-break-after: always;}}",
+                text_color=text_color,
+                background_color=background_color,
+                name=cv["name"],
+                residence=cv["residence"],
+                phone=cv["phone"],
+                email=cv["email"],
+                field_profile=all_profile,
+                links= all_links,
+                field_skill=all_skills,
+                field_cert=all_certs,
+                field_experience = all_experience,
+                field_references = all_references,
+                field_education = all_education
+
+                )
+            print(result)
+
+
+if __name__ == "__main__":
+    main()
+
+# TODO english-spanish headers 
