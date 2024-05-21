@@ -71,8 +71,8 @@ large_seed = {
     {"description":"Briefly_describe_what_cert_is_about", "image":"./path/to/image.png", "link": "https://drive.google.com/..."}
   ],
   "skills":[
-      "<i class='bi bi-translate pe-2'></i>English_proficiency_and_any_other_language_you_speak_goes_here",
-      "<i class='bi bi-code-slash pe-2'></i>You_can_add_bootstrap_icons_and_add_some_padding_with_class_pe-2",
+      "<i class=\"bi bi-translate pe-2\"></i>English_proficiency_and_any_other_language_you_speak_goes_here",
+      "<i class=\"bi bi-code-slash pe-2\"></i>You_can_add_bootstrap_icons_and_add_some_padding_with_class_pe-2",
       "https://icons.getbootstrap.com/",
       "Customize_skill_set_as_you_see_fit",
       "Add_soft_skills_if_you_want_as_well",
