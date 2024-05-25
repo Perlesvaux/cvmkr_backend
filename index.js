@@ -58,6 +58,7 @@ app.post("/generate",  MWLogger, (req, res) => {
     console.log(req.body.imageSize)
     console.log(req.body.textColor)
     console.log(req.body.backgroundColor)
+    console.log(req.body.language)
 
     
 
@@ -67,6 +68,7 @@ app.post("/generate",  MWLogger, (req, res) => {
     if (req.body.imageSize!=='default')       args = [...args, '-i', req.body.imageSize] 
     if (req.body.textColor!=='default')       args = [...args, '-t', req.body.textColor]
     if (req.body.backgroundColor!=='default') args = [...args, '-b', req.body.backgroundColor]
+    if (req.body.language!=='default')        args = [...args, '-l', req.body.language]
 
   console.log(args)
 
