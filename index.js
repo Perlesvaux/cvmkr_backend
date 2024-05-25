@@ -53,9 +53,24 @@ app.post("/generate",  MWLogger, (req, res) => {
     // res.setHeader('Content-Type', ' application/json');
     res.setHeader('Content-Disposition', `attachment`);
     // console.log(req.body.jsonContent)
+    
+    console.log(req.body.flavors)
+    console.log(req.body.imageSize)
+    console.log(req.body.textColor)
+    console.log(req.body.backgroundColor)
+
+    
 
     const cmd = `echo '${req.body.jsonContent}'`
     let args = ['|', 'python3', 'cvmaker', '-s']
+    if (req.body.flavors!=='default')         args = [...args, '-f', req.body.flavors]
+    if (req.body.imageSize!=='default')       args = [...args, '-i', req.body.imageSize] 
+    if (req.body.textColor!=='default')       args = [...args, '-t', req.body.textColor]
+    if (req.body.backgroundColor!=='default') args = [...args, '-b', req.body.backgroundColor]
+
+  console.log(args)
+
+
     const process = spawn(cmd, args, {shell:true});
 
     process.stdout.on('data', (data)=>{
