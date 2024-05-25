@@ -338,7 +338,7 @@ certs_template = """
             <div class="card-body" >
               <div><a href='{link}'><img style="height:100%;width:100%; class="border border-dark" src='{image}' alt="{description}"></a></div>
             </div>
-            <div class="card-footer  h6">
+            <div class="card-footer {text_color} h6">
                {description}
             </div>
           </div>
@@ -634,7 +634,7 @@ def main():
             cv = json.load(file)
 
             all_skills = field_skill.format(skills = " ".join ([skills_template.format(skill=ability) for ability in cv["skills"]]),background_color=background_color, text_color=text_color, skill_header=skill_header) if len(cv.get("skills")) else "";
-            all_certs = field_cert.format(certifications = " ".join([certs_template.format(background_color=background_color, link=cert['link'], image=cert['image'], description=cert['description'], img_size=img_size) for cert in cv["certifications"]]), background_color=background_color, text_color=text_color, certs_header=certs_header) if len(cv.get("certifications")) else "";
+            all_certs = field_cert.format(certifications = " ".join([certs_template.format(text_color=text_color, background_color=background_color, link=cert['link'], image=cert['image'], description=cert['description'], img_size=img_size) for cert in cv["certifications"]]), background_color=background_color, text_color=text_color, certs_header=certs_header) if len(cv.get("certifications")) else "";
             all_experience = field_experience.format(experience = " ".join([experience_template.format(when=exp['when'], where=exp['where'], what=exp['what'], description=exp['description']) for exp in cv['experience']]), background_color=background_color, text_color=text_color, experience_header=experience_header) if len(cv.get("experience")) else "";
             all_links = " ".join([links_template.format(link=social['link'], color=social['color'], legend=social['legend']) for social in cv["links"]]) if len(cv.get("links")) else "";
             all_references = field_references.format(references = " ".join([references_template.format(who=refer['who'], tel=refer['tel']) for refer in cv['references']]), background_color=background_color, text_color=text_color, references_header=references_header) if len(cv.get("references")) else "";
@@ -678,7 +678,7 @@ def main():
             cv = json.loads(from_stdin)
 
             all_skills = field_skill.format(skills = " ".join ([skills_template.format(skill=ability) for ability in cv["skills"]]),background_color=background_color, text_color=text_color, skill_header=skill_header) if len(cv.get("skills")) else "";
-            all_certs = field_cert.format(certifications = " ".join([certs_template.format(background_color=background_color, link=cert['link'], image=cert['image'], description=cert['description'], img_size=img_size) for cert in cv["certifications"]]), background_color=background_color, text_color=text_color, certs_header=certs_header) if len(cv.get("certifications")) else "";
+            all_certs = field_cert.format(certifications = " ".join([certs_template.format(text_color=text_color, background_color=background_color, link=cert['link'], image=cert['image'], description=cert['description'], img_size=img_size) for cert in cv["certifications"]]), background_color=background_color, text_color=text_color, certs_header=certs_header) if len(cv.get("certifications")) else "";
             all_experience = field_experience.format(experience = " ".join([experience_template.format(when=exp['when'], where=exp['where'], what=exp['what'], description=exp['description']) for exp in cv['experience']]), background_color=background_color, text_color=text_color, experience_header=experience_header) if len(cv.get("experience")) else "";
             all_links = " ".join([links_template.format(link=social['link'], color=social['color'], legend=social['legend']) for social in cv["links"]]) if len(cv.get("links")) else "";
             all_references = field_references.format(references = " ".join([references_template.format(who=refer['who'], tel=refer['tel']) for refer in cv['references']]), background_color=background_color, text_color=text_color, references_header=references_header) if len(cv.get("references")) else "";
